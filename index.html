@@ -1,578 +1,164 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Travel Helper</title>
-
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#10243b"><title>Travel Helper</title>
 <style>
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#edf4fa;color:#18283b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}header{background:linear-gradient(130deg,#10243b,#087caa);color:#fff;padding:22px 16px;text-align:center}.topbar{display:flex;align-items:center;justify-content:space-between;gap:10px}.topbar h1{margin:0;flex:1;font-size:clamp(24px,6vw,34px)}header p{margin:7px 0}main{max-width:850px;margin:auto;padding:14px}.card{background:#fff;border-radius:16px;padding:18px;margin-bottom:15px;box-shadow:0 3px 14px #00000010;scroll-margin-top:15px}h2{margin:0 0 14px;font-size:21px}h3{margin:18px 0 10px}label{display:block;font-size:14px;font-weight:650;margin-top:8px}input,select,textarea,button{font:inherit}input:not([type=checkbox]),select,textarea{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:9px;margin:5px 0 10px;background:#fff}textarea{min-height:75px}button,.navlinks a{border:0;border-radius:9px;padding:11px 14px;background:#087caa;color:white;font-weight:650;cursor:pointer;text-decoration:none;display:inline-block;text-align:center}button:active,.navlinks a:active{opacity:.7}.secondary{background:#e7eef5;color:#18324b}.danger{background:#b42336}.row{display:flex;flex-wrap:wrap;gap:8px}.row>*{flex:1;min-width:100px}.navlinks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0 0 15px}.navlinks a{font-size:14px}.timer-card{background:linear-gradient(135deg,#10243b,#087caa);color:#fff;text-align:center}.timer-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:14px 0}.timer-unit{background:#ffffff22;border-radius:12px;padding:12px 3px}.timer-unit strong{display:block;font-size:clamp(19px,5vw,35px);font-variant-numeric:tabular-nums}.timer-unit span{font-size:12px}.timer-card .small{color:#e7f6ff}.small{font-size:13px;color:#64748b}.item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #edf0f4}.item input[type=checkbox]{width:22px;height:22px;margin:0;flex:none}.item span{flex:1;overflow-wrap:anywhere}.done{text-decoration:line-through;color:#8492a3}.progress{background:#dbe5ee;height:12px;border-radius:20px;overflow:hidden}.progress div{height:100%;background:#16a085;width:0}.stat{flex:1;background:#f1f6fb;padding:12px;border-radius:12px;text-align:center}.stat strong{display:block;font-size:21px}.entry{border-bottom:1px solid #e5eaf0;padding:12px 0;overflow-wrap:anywhere}.entry:last-child{border:0}.entry button{margin-top:7px}.warning{background:#fff1d6;color:#7b3900;border:1px solid #f5bf63;border-radius:10px;padding:12px;margin:12px 0}.hidden{display:none!important}.sharemenu{display:none;position:fixed;inset:0;background:#0009;z-index:20;align-items:center;justify-content:center;padding:16px}.sharemenu.open{display:flex}.sharebox{background:#fff;border-radius:18px;padding:20px;width:100%;max-width:400px;max-height:90vh;overflow:auto}.sharebox button{display:block;width:100%;margin:8px 0}footer{text-align:center;padding:25px;color:#64748b}@media print{button,.no-print,.sharemenu,.navlinks{display:none!important}body{background:#fff}.card{box-shadow:none;border:1px solid #ddd}}
 
-/* GENERAL DESIGN */
+/* Slide-out sidebar: itinerary, excursions, reminders */
+.menu-button{flex:none;background:#ffffff25;border:1px solid #ffffff60;padding:9px 12px}
+.sidebar-shade{display:none;position:fixed;inset:0;background:#08192b99;z-index:30}
+.sidebar-shade.open{display:block}
+.trip-sidebar{position:fixed;z-index:31;top:0;bottom:0;left:0;width:min(430px,94vw);background:#edf4fa;box-shadow:8px 0 30px #0004;transform:translateX(-110%);transition:transform .2s ease;overflow-y:auto;padding:16px;overscroll-behavior:contain}
+.trip-sidebar.open{transform:translateX(0)}
+.sidebar-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:22px;padding:4px 0 12px}
+.sidebar-group{background:#fff;border-radius:13px;margin:10px 0;box-shadow:0 2px 8px #00000012;overflow:hidden}
+.sidebar-group summary{cursor:pointer;padding:16px;font-weight:750;font-size:17px;list-style:none}
+.sidebar-group summary::-webkit-details-marker{display:none}
+.sidebar-group summary:after{content:'⌄';float:right;font-size:21px}
+.sidebar-group[open] summary:after{content:'⌃'}
+.sidebar-group .card{box-shadow:none;margin:0;padding:12px;border-top:1px solid #e5eaf0;border-radius:0}
+.sidebar-group .item{flex-wrap:wrap}
+@media print{.trip-sidebar,.sidebar-shade,.menu-button{display:none!important}}
 
-* {
-  box-sizing: border-box;
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
+/* Soft gray backdrop with aqua, water-inspired diagonal stripes */
 body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  color: #183047;
   background-color: #cbd0d2;
-
   background-image:
-    repeating-linear-gradient(
-      125deg,
-      transparent 0px,
-      transparent 38px,
-      rgba(50,203,207,0.045) 39px,
-      rgba(95,225,221,0.065) 46px,
-      transparent 56px,
-      transparent 112px
-    );
+    repeating-linear-gradient(125deg,
+      transparent 0px, transparent 38px,
+      rgba(50, 203, 207, .055) 39px,
+      rgba(95, 225, 221, .075) 46px,
+      rgba(225, 255, 254, .05) 49px,
+      transparent 56px, transparent 112px),
+    linear-gradient(165deg, #dce0e1 0%, #bfc7ca 52%, #d4d9da 100%);
+  background-attachment: fixed;
 }
-
-header {
-  background: linear-gradient(
-    135deg,
-    #10243b,
-    #087caa
-  );
-
-  color: white;
-  padding: 20px;
-  text-align: center;
+.trip-sidebar {
+  background-color: #cbd0d2;
+  background-image: repeating-linear-gradient(125deg,
+    transparent 0px, transparent 38px,
+    rgba(50, 203, 207, .045) 39px,
+    rgba(95, 225, 221, .065) 46px,
+    transparent 56px, transparent 112px);
 }
+@media print { body { background: white !important; } }
+.booking-links a{display:block;margin:8px 0;padding:12px;background:#eaf6f7;border-radius:10px;color:#075b72;text-decoration:none;font-weight:700}.booking-links a:focus,.booking-links a:hover{background:#d3eff0}.booking-check{display:flex;align-items:center;gap:9px;margin:12px 0}.booking-check input{width:20px;height:20px;margin:0;flex:none}.booking-links h3{margin:18px 0 8px}
+/* Separate in-app pages for trip tools */
+.sidebar-link{display:flex;align-items:center;justify-content:space-between;width:100%;text-align:left;background:white;color:#17384a;font-size:17px;font-weight:700;padding:18px;margin:10px 0;border-radius:13px;box-shadow:0 2px 8px #00000012}.sidebar-link span{color:#087caa;font-size:23px}.sidebar-link:focus-visible{outline:3px solid #087caa;outline-offset:2px}.tool-page{max-width:850px;margin:auto}.tool-page .card{margin:0}.page-nav{display:flex;gap:10px;margin-bottom:16px}.page-nav button{flex:1}.tool-page .booking-links a{overflow-wrap:anywhere}body.tool-view #homeView{display:none!important}body.tool-view #toolPages{display:block}#toolPages{display:none}#toolPages .tool-page.hidden{display:none}@media print{body.tool-view #homeView{display:block!important}#toolPages{display:none!important}}
+/* Mobile-safe grid alignment */
+html,body{max-width:100%;overflow-x:hidden}
+main,.card,.tool-page,.row,.stat,.sharebox{min-width:0}
+input:not([type=checkbox]),select,textarea{display:block;min-width:0;max-width:100%;box-sizing:border-box}
+.row>*{min-width:0}
+@media(max-width:600px){main{padding:12px}.card{padding:15px}.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,135px),1fr))}.row>*{width:100%}.timer-unit{min-width:0}.timer-unit strong{font-size:clamp(17px,5vw,28px)}}
+.tracker-panel{background:linear-gradient(135deg,#10243b,#087caa);color:white;text-align:center;border-radius:14px;padding:18px;margin:12px 0}
+.tracker-panel .timer-grid{margin:12px 0}
+.tracker-panel .small{color:#e7f6ff}
+</style></head><body>
+<header><div class="topbar"><button class="menu-button no-print" onclick="toggleSidebar()" aria-label="Open trip tools" aria-controls="tripSidebar" aria-expanded="false" id="menuButton">☰ Menu</button><h1>✈️ Travel Helper</h1><button onclick="openShare()" aria-label="Share travel plan">↗</button></div><p>Plan • Pack • Budget • Explore</p></header>
+<main><div id="homeView">
+<section class="card timer-card"><h2>⏳ Vacation Countdown</h2><div class="timer-grid" role="timer"><div class="timer-unit"><strong id="timerDays">—</strong><span>Days</span></div><div class="timer-unit"><strong id="timerHours">—</strong><span>Hours</span></div><div class="timer-unit"><strong id="timerMinutes">—</strong><span>Minutes</span></div><div class="timer-unit"><strong id="timerSeconds">—</strong><span>Seconds</span></div></div><p id="timerMessage" class="small">Create a trip and set a departure date and time.</p></section>
 
-header h1 {
-  margin: 10px 0;
-  font-size: 28px;
+<section class="card"><h2>🌎 My Trips</h2><label for="tripSelect">Select Trip</label><select id="tripSelect" onchange="selectTrip()"></select><div class="row"><button onclick="newTrip()">+ New Trip</button><button class="secondary" onclick="renameTrip()">Rename</button><button class="danger" onclick="deleteTrip()">Delete</button></div></section>
+<div id="tripContent" class="hidden">
+<section class="card"><h2>📅 Trip Details</h2><label for="tripType">Type of Trip</label><select id="tripType"><option value="">Select a trip type</option><option>🚢 Cruise</option><option>🏖️ Beach Vacation</option><option>✈️ International Travel</option><option>🚗 Road Trip</option><option>🏙️ City Break</option><option>🏕️ Camping / Outdoors</option><option>👨‍👩‍👧 Family Vacation</option><option>Other</option></select><label for="destination">Destination</label><input id="destination" placeholder="Bahamas, Paris, Miami..."><label for="departure">Departure Date</label><input type="date" id="departure"><label for="departureTime">Departure Time</label><input type="time" id="departureTime" value="00:00"><label for="returnDate">Return Date</label><input type="date" id="returnDate"><button onclick="saveDetails()">Save Trip Details</button></section>
+<section class="card"><h2>🧳 Categorized Checklist</h2><label for="category">Category</label><select id="category"><option>Clothing</option><option>Toiletries</option><option>Travel Documents</option><option>Electronics</option><option>Medications</option><option>Transportation</option><option>Activities</option><option>Other</option></select><label for="itemName">Item Name</label><input id="itemName" placeholder="Example: Passport"><button onclick="addItem()">+ Add Item</button> <button class="secondary" onclick="addCategory()">+ Category</button><p id="checkProgress" class="small"></p><div class="progress"><div id="progressBar"></div></div><div id="checklist"></div></section>
+<section class="card" id="budgetCard"><h2>💰 Travel Budget Tracker</h2><p class="small">Select your trip type in Trip Details, then set your budget and alert amount here.</p><label for="budget">Total Vacation Budget ($)</label><input type="number" id="budget" min="0" step=".01" placeholder="2500"><label for="budgetThreshold">🔊 Alert When Remaining Budget Falls Below ($)</label><input type="number" id="budgetThreshold" min="0" step=".01" placeholder="Example: 500"><button onclick="saveBudget()">Save Budget & Alert</button><div id="budgetWarning" class="warning hidden" role="alert"></div><div class="row" style="margin-top:15px"><div class="stat"><small>Budget</small><strong id="totalBudget">$0</strong></div><div class="stat"><small>Spent</small><strong id="totalSpent">$0</strong></div><div class="stat"><small>Remaining</small><strong id="remaining">$0</strong></div></div><h3>Add Expense</h3><label for="expenseName">Expense Name</label><input id="expenseName" placeholder="Example: Hotel"><label for="expenseAmount">Amount ($)</label><input type="number" id="expenseAmount" min="0" step=".01"><label for="expenseCategory">Category</label><select id="expenseCategory"><option>Transportation</option><option>Lodging</option><option>Food</option><option>Activities</option><option>Shopping</option><option>Other</option></select><button onclick="addExpense()">+ Add Expense</button><div id="expenseList"></div><p class="small">Sound alerts work while this page is open and audio is permitted. Keep your phone volume on.</p></section>
+
+
+
+</div></div><div id="toolPages"><section class="tool-page hidden" id="page-timetracker" aria-label="⏱️ Time Tracker"><div class="page-nav"><button class="secondary" onclick="showHome()">← Back to My Trips</button><button class="secondary" onclick="toggleSidebar()">☰ Menu</button></div><section class="card"><h2>⏱️ Vacation Time Tracker</h2><p class="small">Your countdown uses the departure date and time saved for the selected trip.</p><div class="tracker-panel"><h3 id="trackerTripName">Your Vacation</h3><div class="timer-grid" role="timer"><div class="timer-unit"><strong id="trackerDays">—</strong><span>Days</span></div><div class="timer-unit"><strong id="trackerHours">—</strong><span>Hours</span></div><div class="timer-unit"><strong id="trackerMinutes">—</strong><span>Minutes</span></div><div class="timer-unit"><strong id="trackerSeconds">—</strong><span>Seconds</span></div></div><p class="small" id="trackerMessage">Set a departure date to start.</p></div><label for="trackerDeparture">Departure Date</label><input type="date" id="trackerDeparture"><label for="trackerDepartureTime">Departure Time</label><input type="time" id="trackerDepartureTime"><div class="row"><button onclick="saveTrackerDate()">Save Countdown</button><button onclick="shareCountdown()">📤 Share Countdown</button></div><p class="small">You can share a countdown image to Instagram using your phone's share sheet, or share trip text to Facebook.</p></section></section><section class="tool-page hidden" id="page-itinerary" aria-label="📅 Itinerary"><div class="page-nav"><button class="secondary" onclick="showHome()">← Back to My Trips</button><button class="secondary" onclick="toggleSidebar()">☰ Menu</button></div><section class="card" id="itineraryCard"><h2>🗓️ Travel Itinerary</h2><label for="activityName">Activity Name</label><input id="activityName" placeholder="Flight, hotel check-in, excursion..."><label for="activityCategory">Category</label><select id="activityCategory"><option>Flight</option><option>Hotel</option><option>Cruise</option><option>Excursion</option><option>Dining</option><option>Transportation</option><option>Other</option></select><label for="activityDate">Date</label><input type="date" id="activityDate"><label for="activityTime">Time</label><input type="time" id="activityTime"><label for="activityNotes">Details / Confirmation Notes</label><textarea id="activityNotes" placeholder="Reservation details, address, notes..."></textarea><button onclick="addActivity()">+ Add to Itinerary</button><div id="itinerary"></div></section></section><section class="tool-page hidden" id="page-excursions" aria-label="🏝️ Excursions"><div class="page-nav"><button class="secondary" onclick="showHome()">← Back to My Trips</button><button class="secondary" onclick="toggleSidebar()">☰ Menu</button></div><section class="card" id="excursionCard"><h2>🏝️ Excursion Planner</h2><label for="excursionName">Excursion Name</label><input id="excursionName" placeholder="Snorkeling, city tour, beach day..."><label for="excursionLocation">Location / Port</label><input id="excursionLocation" placeholder="Nassau, Bahamas"><label for="excursionDate">Date</label><input id="excursionDate" type="date"><label for="excursionTime">Time</label><input id="excursionTime" type="time"><label for="excursionCost">Cost ($)</label><input id="excursionCost" type="number" min="0" step=".01" placeholder="0.00"><label for="excursionNotes">Booking / Confirmation Notes</label><textarea id="excursionNotes" placeholder="Operator, meeting place, confirmation..."></textarea><button onclick="addExcursion()">+ Add Excursion</button><p class="small">Excursion costs are informational. Add them as expenses separately to count them toward your budget.</p><div id="excursionList"></div></section></section><section class="tool-page hidden" id="page-reminders" aria-label="🔔 Reminders"><div class="page-nav"><button class="secondary" onclick="showHome()">← Back to My Trips</button><button class="secondary" onclick="toggleSidebar()">☰ Menu</button></div><section class="card" id="reminderCard"><h2>🔔 Categorized Reminders</h2><label for="reminderName">Reminder</label><input id="reminderName" placeholder="Pay final cruise balance"><label for="reminderCategory">Category</label><select id="reminderCategory"><option>Travel Documents</option><option>Payments</option><option>Packing</option><option>Transportation</option><option>Excursions</option><option>Reservations</option><option>Other</option></select><label for="reminderDate">Reminder Date</label><input id="reminderDate" type="date"><label for="reminderTime">Reminder Time</label><input id="reminderTime" type="time"><button onclick="addReminder()">+ Set Reminder</button><label for="reminderFilter">Filter Reminders</label><select id="reminderFilter" onchange="renderReminders()"><option value="All">All Categories</option></select><div id="reminderList"></div><p class="small">Reminders are saved on this device. Due reminders display while the app is open; they are not push notifications when Safari is closed.</p></section></section><section class="tool-page hidden" id="page-booking" aria-label="🌴 Book Your Vacation"><div class="page-nav"><button class="secondary" onclick="showHome()">← Back to My Trips</button><button class="secondary" onclick="toggleSidebar()">☰ Menu</button></div><section class="card"><h2>Compare Travel Booking Options</h2><p class="small">These links open official booking sites. Prices and availability are checked there, not in Travel Helper.</p>
+<div class="booking-links">
+<h3>🏨 Hotels & vacation rentals</h3><a href="https://www.booking.com/" target="_blank" rel="noopener noreferrer">Booking.com ↗</a><a href="https://www.expedia.com/" target="_blank" rel="noopener noreferrer">Expedia ↗</a><a href="https://www.hotels.com/" target="_blank" rel="noopener noreferrer">Hotels.com ↗</a><a href="https://www.vrbo.com/" target="_blank" rel="noopener noreferrer">Vrbo ↗</a>
+<h3>✈️ Flights, cars & packages</h3><a href="https://www.expedia.com/" target="_blank" rel="noopener noreferrer">Expedia ↗</a><a href="https://www.booking.com/" target="_blank" rel="noopener noreferrer">Booking.com ↗</a><a href="https://www.kayak.com/" target="_blank" rel="noopener noreferrer">KAYAK ↗</a>
+<h3>🚢 Cruises</h3><a href="https://www.carnival.com/" target="_blank" rel="noopener noreferrer">Carnival Cruise Line ↗</a><a href="https://www.royalcaribbean.com/" target="_blank" rel="noopener noreferrer">Royal Caribbean ↗</a><a href="https://www.ncl.com/" target="_blank" rel="noopener noreferrer">Norwegian Cruise Line ↗</a>
+<h3>🏝️ Excursions & experiences</h3><a href="https://www.viator.com/" target="_blank" rel="noopener noreferrer">Viator ↗</a><a href="https://www.getyourguide.com/" target="_blank" rel="noopener noreferrer">GetYourGuide ↗</a></div>
+<h2>📌 Add a Booking to My Trip</h2><p class="small">After booking on another website, save its details here. Don't enter payment card numbers or passwords.</p>
+<label for="bookingType">Booking Type</label><select id="bookingType"><option>Hotel</option><option>Flight</option><option>Cruise</option><option>Rental Car</option><option>Excursion</option><option>Vacation Package</option><option>Other</option></select>
+<label for="bookingProvider">Booking Company</label><input id="bookingProvider" placeholder="e.g. Expedia">
+<label for="bookingName">Booking / Reservation Name</label><input id="bookingName" placeholder="e.g. Beachfront hotel">
+<label for="bookingDate">Date</label><input type="date" id="bookingDate">
+<label for="bookingTime">Time (optional)</label><input type="time" id="bookingTime">
+<label for="bookingConfirmation">Confirmation Number (optional)</label><input id="bookingConfirmation" autocomplete="off" placeholder="Reservation reference">
+<label for="bookingCost">Cost ($)</label><input id="bookingCost" type="number" min="0" step=".01" placeholder="0.00">
+<label for="bookingNotes">Notes</label><textarea id="bookingNotes" placeholder="Address, check-in details, etc."></textarea>
+<label class="booking-check"><input type="checkbox" id="bookingToItinerary" checked> Also add to itinerary (requires a date)</label>
+<label class="booking-check"><input type="checkbox" id="bookingToBudget"> Also count this cost in budget expenses</label>
+<button onclick="addBooking()">+ Save Booking to My Trip</button><div id="bookingList"></div></section></section></div></main>
+<div class="sidebar-shade no-print" id="sidebarShade" onclick="closeSidebar()"></div>
+<aside class="trip-sidebar no-print" id="tripSidebar" aria-label="Trip tools">
+<div class="sidebar-heading"><strong>✈️ Trip Tools</strong><button class="secondary" onclick="closeSidebar()" aria-label="Close menu">✕</button></div>
+<p class="small">Tap a section to open its own page. Your entries stay saved with your selected trip.</p>
+<button type="button" class="sidebar-link" onclick="showToolPage('timetracker')">⏱️ Time Tracker<span aria-hidden="true">→</span></button><button type="button" class="sidebar-link" onclick="showToolPage('itinerary')">📅 Itinerary<span aria-hidden="true">→</span></button><button type="button" class="sidebar-link" onclick="showToolPage('excursions')">🏝️ Excursions<span aria-hidden="true">→</span></button><button type="button" class="sidebar-link" onclick="showToolPage('reminders')">🔔 Reminders<span aria-hidden="true">→</span></button><button type="button" class="sidebar-link" onclick="showToolPage('booking')">🌴 Book Your Vacation<span aria-hidden="true">→</span></button></aside><footer>✈️ Travel Helper • Your adventure awaits</footer>
+<div class="sharemenu" id="shareMenu"><div class="sharebox"><h2>📤 Share Travel Plan</h2><button onclick="shareNative()">📱 Share / Save to Files</button><button onclick="downloadPlan()">⬇️ Save to Phone</button><button onclick="saveImage()">🖼️ Save Image</button><button onclick="emailPlan()">✉️ Email</button><button onclick="textPlan()">💬 Text Message</button><button onclick="shareFacebook()">📘 Facebook</button><button onclick="shareInstagram()">📸 Instagram (Share Image)</button><button onclick="copyTripLink()">🔗 Copy App Link</button><button onclick="printPlan()">🖨️ Print</button><button class="secondary" onclick="closeShare()">Close</button></div></div>
+<script>
+'use strict';
+function showToolPage(page){
+ if(!current()){alert('Please create or select a trip first.');closeSidebar();return;}
+ document.querySelectorAll('.tool-page').forEach(el=>el.classList.add('hidden'));
+ const target=$('page-'+page);if(!target)return;
+ target.classList.remove('hidden');document.body.classList.add('tool-view');
+ closeSidebar();if(page==='timetracker')syncTrackerFields();window.scrollTo({top:0,behavior:'instant'});
 }
-
-header p {
-  margin: 5px 0;
-}
-
-.topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-}
-
-main {
-  max-width: 850px;
-  margin: auto;
-  padding: 15px;
-}
-
-/* CARDS */
-
-.card {
-  background: white;
-  padding: 18px;
-  margin-bottom: 16px;
-  border-radius: 15px;
-  box-shadow: 0 3px 12px rgba(0,0,0,0.08);
-}
-
-h2 {
-  margin-top: 0;
-  font-size: 22px;
-}
-
-h3 {
-  font-size: 18px;
-}
-
-/* TEXT BOX ALIGNMENT */
-
-input,
-select,
-textarea {
-  display: block;
-  width: 100%;
-  max-width: 100%;
-  min-width: 0;
-  padding: 12px;
-  margin-top: 6px;
-  margin-bottom: 14px;
-  border: 1px solid #ccd6df;
-  border-radius: 9px;
-  font-size: 16px;
-  background: white;
-}
-
-input[type="checkbox"] {
-  width: 20px;
-  height: 20px;
-  margin: 0;
-}
-
-label {
-  display: block;
-  font-weight: bold;
-  margin-top: 10px;
-  font-size: 14px;
-}
-
-/* BUTTONS */
-
-button {
-  background: #087caa;
-  color: white;
-  border: none;
-  border-radius: 9px;
-  padding: 12px 15px;
-  font-size: 15px;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-button:active {
-  opacity: 0.7;
-}
-
-.secondary {
-  background: #e7eef5;
-  color: #18324b;
-}
-
-.danger {
-  background: #b42336;
-}
-
-.row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.row > * {
-  flex: 1;
-  min-width: 0;
-}
-
-/* SIDEBAR */
-
-.sidebar {
-  position: fixed;
-  top: 0;
-  left: -100%;
-  width: min(350px, 90vw);
-  height: 100%;
-  background: #d4d9db;
-  z-index: 1000;
-  padding: 20px;
-  overflow-y: auto;
-  transition: left 0.3s;
-  box-shadow: 5px 0 20px rgba(0,0,0,0.2);
-}
-
-.sidebar.open {
-  left: 0;
-}
-
-.sidebar h2 {
-  margin-bottom: 20px;
-}
-
-.sidebar button {
-  display: block;
-  width: 100%;
-  margin-bottom: 10px;
-  text-align: left;
-  background: white;
-  color: #183047;
-  padding: 16px;
-  border-radius: 12px;
-}
-
-.sidebar .close-button {
-  background: #10243b;
-  color: white;
-  text-align: center;
-}
-
-/* SEPARATE PAGES */
-
-.page {
-  display: none;
-}
-
-.page.active {
-  display: block;
-}
-
-/* COUNTDOWN */
-
-.timer-card {
-  background: linear-gradient(
-    135deg,
-    #10243b,
-    #087caa
-  );
-  color: white;
-  text-align: center;
-}
-
-.timer-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-  margin: 20px 0;
-}
-
-.timer-unit {
-  background: rgba(255,255,255,0.15);
-  padding: 12px 4px;
-  border-radius: 10px;
-}
-
-.timer-unit strong {
-  display: block;
-  font-size: 25px;
-}
-
-.timer-unit span {
-  font-size: 12px;
-}
-
-/* BUDGET */
-
-.stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-}
-
-.stat {
-  background: #edf4fa;
-  border-radius: 10px;
-  padding: 12px 5px;
-  text-align: center;
-}
-
-.stat strong {
-  display: block;
-  font-size: 18px;
-}
-
-.warning {
-  background: #fff1d6;
-  color: #7b3900;
-  padding: 12px;
-  border-radius: 10px;
-  margin-top: 10px;
-}
-
-/* LIST ITEMS */
-
-.list-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  border-bottom: 1px solid #e5eaf0;
-  padding: 12px 0;
-}
-
-.list-item span {
-  flex: 1;
-  overflow-wrap: anywhere;
-}
-
-.completed {
-  text-decoration: line-through;
-  color: gray;
-}
-
-/* SHARE MENU */
-
-.share-menu {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.6);
-  z-index: 2000;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-
-.share-menu.open {
-  display: flex;
-}
-
-.share-box {
-  background: white;
-  border-radius: 15px;
-  padding: 20px;
-  width: 100%;
-  max-width: 400px;
-  max-height: 90vh;
-  overflow-y: auto;
-}
-
-.share-box button {
-  display: block;
-  width: 100%;
-  margin-bottom: 10px;
-}
-
-/* BOOKING LINKS */
-
-.booking-link {
-  display: block;
-  background: #eaf6f7;
-  color: #075b72;
-  text-decoration: none;
-  font-weight: bold;
-  padding: 14px;
-  border-radius: 10px;
-  margin-bottom: 10px;
-}
-
-/* MOBILE OPTIMIZATION */
-
-@media (max-width: 600px) {
-
-  main {
-    padding: 12px;
-  }
-
-  .card {
-    padding: 15px;
-  }
-
-  .timer-unit strong {
-    font-size: 20px;
-  }
-
-  .row {
-    display: grid;
-    grid-template-columns: repeat(
-      auto-fit,
-      minmax(min(100%, 135px), 1fr)
-    );
-  }
-
-  .row button {
-    width: 100%;
-  }
-
-}
-
-@media print {
-
-  header button,
-  .sidebar,
-  .share-menu,
-  .no-print {
-    display: none !important;
-  }
-
-  body {
-    background: white;
-  }
-
-}
-
-</style>
-</head>
-
-<body>
-
-<header>
-
-<div class="topbar">
-
-<button onclick="openSidebar()">
-☰ Menu
-</button>
-
-<h1>✈️ Travel Helper</h1>
-
-<button onclick="openShare()">
-↗
-</button>
-
-</div>
-
-<p>Plan • Pack • Budget • Explore</p>
-
-</header>
-
-<!-- SIDEBAR -->
-
-<div class="sidebar" id="sidebar">
-
-<h2>✈️ Trip Tools</h2>
-
-<button onclick="showPage('dashboard')">
-🏠 Dashboard
-</button>
-
-<button onclick="showPage('checklist')">
-🧳 Travel Checklist
-</button>
-
-<button onclick="showPage('budget')">
-💰 Budget Tracker
-</button>
-
-<button onclick="showPage('itinerary')">
-📅 Travel Itinerary
-</button>
-
-<button onclick="showPage('excursions')">
-🏝️ Excursions
-</button>
-
-<button onclick="showPage('reminders')">
-🔔 Reminders
-</button>
-
-<button onclick="showPage('tracker')">
-⏱️ Time Tracker
-</button>
-
-<button onclick="showPage('booking')">
-🌴 Book Your Vacation
-</button>
-
-<button onclick="openShare()">
-📤 Share & Export
-</button>
-
-<button class="close-button"
-onclick="closeSidebar()">
-✕ Close Menu
-</button>
-
-</div>
-
-<main>
-
-<!-- DASHBOARD -->
-
-<section id="dashboard" class="page active">
-
-<div class="card timer-card">
-
-<h2>⏳ Vacation Countdown</h2>
-
-<div class="timer-grid">
-
-<div class="timer-unit">
-<strong id="homeDays">00</strong>
-<span>Days</span>
-</div>
-
-<div class="timer-unit">
-<strong id="homeHours">00</strong>
-<span>Hours</span>
-</div>
-
-<div class="timer-unit">
-<strong id="homeMinutes">00</strong>
-<span>Minutes</span>
-</div>
-
-<div class="timer-unit">
-<strong id="homeSeconds">00</strong>
-<span>Seconds</span>
-</div>
-
-</div>
-
-<p id="countdownMessage">
-Create a trip to begin.
-</p>
-
-</div>
-
-<div class="card">
-
-<h2>🌎 My Trips</h2>
-
-<label>Select Trip</label>
-
-<select id="tripSelect"
-onchange="selectTrip()">
-</select>
-
-<div class="row">
-
-<button onclick="newTrip()">
-+ New Trip
-</button>
-
-<button onclick="renameTrip()"
-class="secondary">
-Rename
-</button>
-
-<button onclick="deleteTrip()"
-class="danger">
-Delete
-</button>
-
-</div>
-
-</div>
-
-<div class="card">
-
-<h2>📅 Trip Details</h2>
-
-<label>Type of Trip</label>
-
-<select id="tripType">
-
-<option value="">
-Select Trip Type
-</option>
-
-<option>Cruise</option>
-<option>Beach Vacation</option>
-<option>International Travel</option>
-<option>Road Trip</option>
-<option>City Break</option>
-<option>Camping</option>
-<option>Family Vacation</option>
-<option>Other</option>
-
-</select>
-
-<label>Destination</label>
-
-<input id="destination"
-placeholder="Bahamas, Paris, Miami...">
-
-<label>Departure Date</label>
-
-<input type="date"
-id="departure">
-
-<label>Departure Time</label>
-
-<input type="time"
-id="departureTime">
-
-<label>Return Date</label>
-
-<input type="date"
-id="returnDate">
-
-<button onclick="saveTripDetails()">
-Save Trip Details
-</button>
-
-</div>
-
-</section>
-  
+function showHome(){document.body.classList.remove('tool-view');document.querySelectorAll('.tool-page').forEach(el=>el.classList.add('hidden'));closeSidebar();window.scrollTo({top:0,behavior:'instant'});}
+
+const STORAGE='travelHelperTripsV1';let trips=[],currentId=null, audioContext=null;const $=id=>document.getElementById(id);const money=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(Number(n)||0);const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));const uid=()=>String(Date.now())+Math.random().toString(36).slice(2);const val=id=>$(id).value.trim();const current=()=>trips.find(t=>String(t.id)===String(currentId));
+function normalize(t){t.items=Array.isArray(t.items)?t.items:[];t.expenses=Array.isArray(t.expenses)?t.expenses:[];t.activities=Array.isArray(t.activities)?t.activities:[];t.excursions=Array.isArray(t.excursions)?t.excursions:[];t.reminders=Array.isArray(t.reminders)?t.reminders:[];t.bookings=Array.isArray(t.bookings)?t.bookings:[];t.categories=Array.isArray(t.categories)?t.categories:[];return t}
+function persist(){try{localStorage.setItem(STORAGE,JSON.stringify(trips));localStorage.setItem(STORAGE+'Current',String(currentId??''))}catch(e){alert('Unable to save on this device. Check browser storage settings.')}}
+function init(){try{trips=JSON.parse(localStorage.getItem(STORAGE)||'[]');if(!Array.isArray(trips))trips=[];trips=trips.map(normalize);currentId=localStorage.getItem(STORAGE+'Current')||trips[0]?.id||null;if(!current())currentId=trips[0]?.id||null}catch(e){trips=[];currentId=null}renderAll();setInterval(()=>{updateCountdown();checkReminders()},1000)}
+function toggleSidebar(){const el=$('tripSidebar');const open=!el.classList.contains('open');el.classList.toggle('open',open);$('sidebarShade').classList.toggle('open',open);$('menuButton').setAttribute('aria-expanded',String(open))}
+function closeSidebar(){$('tripSidebar').classList.remove('open');$('sidebarShade').classList.remove('open');$('menuButton').setAttribute('aria-expanded','false')}
+function newTrip(){const name=prompt('Name your new trip:','My Vacation');if(!name?.trim())return;const t=normalize({id:uid(),name:name.trim(),destination:'',departure:'',departureTime:'00:00',returnDate:'',tripType:'',budget:0,budgetThreshold:'',items:[],expenses:[],activities:[],excursions:[],reminders:[],bookings:[],categories:[]});trips.push(t);currentId=t.id;persist();renderAll()}
+function renameTrip(){const t=current();if(!t)return;const name=prompt('Rename trip:',t.name);if(!name?.trim())return;t.name=name.trim();persist();renderAll()}
+function deleteTrip(){const t=current();if(!t||!confirm('Delete '+t.name+' and all its saved details?'))return;trips=trips.filter(x=>x!==t);currentId=trips[0]?.id||null;persist();renderAll()}
+function selectTrip(){currentId=val('tripSelect')||null;persist();renderAll()}
+function renderAll(){const t=current();$('tripSelect').innerHTML=trips.length?trips.map(x=>`<option value="${esc(x.id)}">${esc(x.name)}</option>`).join(''):'<option value="">Create a trip to begin</option>';$('tripSelect').value=t?String(t.id):'';$('tripContent').classList.toggle('hidden',!t);if(t){for(const id of ['destination','departure','departureTime','returnDate'])$(id).value=t[id]??(id==='departureTime'?'00:00':'');$('tripType').value=t.tripType||'';$('budget').value=t.budget??0;$('budgetThreshold').value=t.budgetThreshold??'';renderChecklist();renderBudget();renderItinerary();renderExcursions();renderReminders();renderBookings()}updateCountdown();syncTrackerFields()}
+function saveDetails(){const t=current();if(!t)return;for(const id of ['destination','departure','departureTime','returnDate'])t[id]=val(id);t.tripType=val('tripType');if(t.returnDate&&t.departure&&t.returnDate<t.departure){alert('Return date cannot be before departure.');return}persist();updateCountdown();syncTrackerFields();alert('Trip details saved!')}
+function updateCountdown(){const t=current();let ms=NaN;if(t?.departure)ms=new Date(t.departure+'T'+(t.departureTime||'00:00')+':00').getTime()-Date.now();const valid=Number.isFinite(ms);if(valid)ms=Math.max(0,ms);const parts=valid?[Math.floor(ms/86400000),Math.floor(ms/3600000)%24,Math.floor(ms/60000)%60,Math.floor(ms/1000)%60]:['—','—','—','—'];['timerDays','timerHours','timerMinutes','timerSeconds'].forEach((id,i)=>$(id).textContent=typeof parts[i]==='number'?String(parts[i]).padStart(2,'0'):parts[i]);$('timerMessage').textContent=!t?'Create a trip to begin.':!t.departure?'Set a departure date and time in Trip Details.':ms===0?'🎉 Your departure time has arrived!':`${t.name}${t.destination?' • '+t.destination:''}`;updateTracker()}
+function syncTrackerFields(){const t=current();if(!t)return;$('trackerDeparture').value=t.departure||'';$('trackerDepartureTime').value=t.departureTime||'00:00'}
+function saveTrackerDate(){const t=current();if(!t)return;const date=val('trackerDeparture'),time=val('trackerDepartureTime')||'00:00';if(!date)return alert('Select a departure date.');if(t.returnDate&&t.returnDate<date)return alert('Departure must be on or before the return date.');t.departure=date;t.departureTime=time;persist();renderAll();alert('Countdown saved!')}
+function countdownSummary(){const t=current();if(!t)return 'Travel Helper';const d=t.departure?new Date(t.departure+'T'+(t.departureTime||'00:00')+':00'):null;const ms=d?Math.max(0,d.getTime()-Date.now()):null;const days=ms===null?'not set':Math.floor(ms/86400000);return `✈️ ${t.name} — ${t.destination||'My vacation'}! ${days} days until departure. ${t.departure||''} ${t.departureTime||''}`;}
+function shareCountdown(){openShare()}
+async function copyTripLink(){try{await navigator.clipboard.writeText(location.href);alert('App link copied! Note: trip details are stored on this device and are not included in the link.')}catch(e){prompt('Copy this app link:',location.href)}closeShare()}
+function shareFacebook(){const url='https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(location.href)+'&quote='+encodeURIComponent(countdownSummary());window.open(url,'_blank','noopener,noreferrer');closeShare();alert('Facebook shares the app link. Your saved trip data stays on this device.')}
+function countdownCanvas(){const t=current(),canvas=document.createElement('canvas'),ctx=canvas.getContext('2d');canvas.width=1080;canvas.height=1080;const grad=ctx.createLinearGradient(0,0,1080,1080);grad.addColorStop(0,'#10243b');grad.addColorStop(1,'#087caa');ctx.fillStyle=grad;ctx.fillRect(0,0,1080,1080);ctx.textAlign='center';ctx.fillStyle='#fff';ctx.font='bold 66px sans-serif';ctx.fillText('✈ Travel Helper',540,210);ctx.font='bold 54px sans-serif';ctx.fillText((t?.name||'My Vacation').slice(0,30),540,360);const ms=t?.departure?Math.max(0,new Date(t.departure+'T'+(t.departureTime||'00:00')+':00').getTime()-Date.now()):null;ctx.font='bold 170px sans-serif';ctx.fillText(ms===null?'—':String(Math.floor(ms/86400000)),540,635);ctx.font='52px sans-serif';ctx.fillText('DAYS TO GO',540,720);ctx.font='36px sans-serif';ctx.fillText((t?.destination||'Your next adventure').slice(0,40),540,820);return canvas}
+async function shareInstagram(){const canvas=countdownCanvas();canvas.toBlob(async blob=>{if(!blob)return alert('Could not create countdown image.');const file=new File([blob],'Travel-Helper-Countdown.png',{type:'image/png'});try{if(navigator.canShare?.({files:[file]})){await navigator.share({files:[file],title:'My Vacation Countdown'});closeShare();return}}catch(e){if(e.name==='AbortError')return}downloadBlob(blob,'Travel-Helper-Countdown.png');closeShare();alert('Countdown image saved to Downloads. Open it and use Share to post it on Instagram.')},'image/png')}
+function updateTracker(){const t=current();if(!t)return;['Days','Hours','Minutes','Seconds'].forEach(x=>{$('tracker'+x).textContent=$('timer'+x).textContent});$('trackerTripName').textContent=t.name;$('trackerMessage').textContent=$('timerMessage').textContent}
+function addCategory(){const name=prompt('New checklist category:');if(!name?.trim())return;const t=current();const cat=name.trim();if(!t.categories.includes(cat))t.categories.push(cat);persist();renderChecklist();$('category').value=cat}
+function addItem(){const t=current(),name=val('itemName');if(!t||!name)return alert('Enter an item name.');t.items.push({id:uid(),name,category:val('category'),done:false});$('itemName').value='';persist();renderChecklist()}
+function toggleItem(id){const i=current().items.find(x=>String(x.id)===String(id));if(i){i.done=!i.done;persist();renderChecklist()}}
+function deleteItem(id){const t=current();t.items=t.items.filter(x=>String(x.id)!==String(id));persist();renderChecklist()}
+function renderChecklist(){const t=current();const cats=['Clothing','Toiletries','Travel Documents','Electronics','Medications','Transportation','Activities','Other',...t.categories];$('category').innerHTML=[...new Set(cats)].map(c=>`<option>${esc(c)}</option>`).join('');const done=t.items.filter(i=>i.done).length;$('checkProgress').textContent=`${done} of ${t.items.length} packed`;$('progressBar').style.width=(t.items.length?done/t.items.length*100:0)+'%';$('checklist').innerHTML=[...new Set(t.items.map(i=>i.category))].map(cat=>`<h3>${esc(cat)}</h3>`+t.items.filter(i=>i.category===cat).map(i=>`<div class="item"><input type="checkbox" aria-label="Packed ${esc(i.name)}" ${i.done?'checked':''} onchange="toggleItem('${esc(i.id)}')"><span class="${i.done?'done':''}">${esc(i.name)}</span><button class="danger" onclick="deleteItem('${esc(i.id)}')" aria-label="Delete item">×</button></div>`).join('')).join('')||'<p class="small">No packing items yet.</p>'}
+function remaining(t){return (Number(t.budget)||0)-t.expenses.reduce((s,e)=>s+(Number(e.amount)||0),0)}
+function below(t){return t.budgetThreshold!==''&&t.budgetThreshold!=null&&Number.isFinite(Number(t.budgetThreshold))&&remaining(t)<Number(t.budgetThreshold)}
+function beep(){try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;audioContext=audioContext||new AC();audioContext.resume();const start=audioContext.currentTime;for(let i=0;i<3;i++){const o=audioContext.createOscillator(),g=audioContext.createGain();o.type='sine';o.frequency.value=i===1?660:880;g.gain.setValueAtTime(.0001,start+i*.25);g.gain.exponentialRampToValueAtTime(.18,start+i*.25+.02);g.gain.exponentialRampToValueAtTime(.0001,start+i*.25+.20);o.connect(g);g.connect(audioContext.destination);o.start(start+i*.25);o.stop(start+i*.25+.22)}}catch(e){}}
+function budgetAlertIfCrossed(wasBelow){const t=current();if(!wasBelow&&below(t)){beep();alert('🔊 Budget alert! Your remaining balance is '+money(remaining(t))+', below your '+money(t.budgetThreshold)+' alert threshold.')}}
+function saveBudget(){const t=current();if(!t)return;const b=Number(val('budget')),threshold=val('budgetThreshold');if(!Number.isFinite(b)||b<0||threshold!==''&&(!Number.isFinite(Number(threshold))||Number(threshold)<0))return alert('Enter valid nonnegative amounts.');const was=below(t);t.budget=b;t.budgetThreshold=threshold;persist();renderBudget();budgetAlertIfCrossed(was)}
+function addExpense(){const t=current(),name=val('expenseName'),amount=Number(val('expenseAmount'));if(!name||!val('expenseAmount')||!Number.isFinite(amount)||amount<=0)return alert('Enter an expense name and an amount greater than zero.');const was=below(t);t.expenses.push({id:uid(),name,amount,category:val('expenseCategory')});$('expenseName').value='';$('expenseAmount').value='';persist();renderBudget();budgetAlertIfCrossed(was)}
+function deleteExpense(id){const t=current();t.expenses=t.expenses.filter(e=>String(e.id)!==String(id));persist();renderBudget()}
+function renderBudget(){const t=current(),spent=t.expenses.reduce((s,e)=>s+(Number(e.amount)||0),0),rem=remaining(t);$('totalBudget').textContent=money(t.budget);$('totalSpent').textContent=money(spent);$('remaining').textContent=money(rem);$('remaining').style.color=rem<0?'#b42336':'';$('budgetWarning').classList.toggle('hidden',!below(t));$('budgetWarning').textContent=below(t)?`⚠️ Low budget! ${money(rem)} remaining, below your ${money(t.budgetThreshold)} alert level.`:'';$('expenseList').innerHTML=t.expenses.map(e=>`<div class="entry"><strong>${esc(e.name)}</strong> — ${money(e.amount)}<div class="small">${esc(e.category)}</div><button class="danger" onclick="deleteExpense('${esc(e.id)}')">Delete</button></div>`).join('')||'<p class="small">No expenses yet.</p>'}
+function addActivity(){const t=current(),name=val('activityName');if(!name)return alert('Enter an activity name.');t.activities.push({id:uid(),name,category:val('activityCategory'),date:val('activityDate'),time:val('activityTime'),notes:val('activityNotes')});for(const id of ['activityName','activityDate','activityTime','activityNotes'])$(id).value='';persist();renderItinerary()}
+function deleteActivity(id){const t=current();t.activities=t.activities.filter(a=>String(a.id)!==String(id));persist();renderItinerary()}
+function renderItinerary(){$('itinerary').innerHTML=[...current().activities].sort((a,b)=>(a.date+'T'+a.time).localeCompare(b.date+'T'+b.time)).map(a=>`<div class="entry"><strong>${esc(a.name)}</strong><div class="small">${esc(a.category)} • ${esc(a.date||'No date')} ${esc(a.time)}</div><div>${esc(a.notes)}</div><button class="danger" onclick="deleteActivity('${esc(a.id)}')">Delete</button></div>`).join('')||'<p class="small">No itinerary activities yet.</p>'}
+function addExcursion(){const t=current(),name=val('excursionName'),cost=val('excursionCost');if(!name)return alert('Enter an excursion name.');if(cost!==''&&(!Number.isFinite(Number(cost))||Number(cost)<0))return alert('Enter a valid excursion cost.');t.excursions.push({id:uid(),name,location:val('excursionLocation'),date:val('excursionDate'),time:val('excursionTime'),cost:cost===''?'':Number(cost),notes:val('excursionNotes')});for(const id of ['excursionName','excursionLocation','excursionDate','excursionTime','excursionCost','excursionNotes'])$(id).value='';persist();renderExcursions()}
+function deleteExcursion(id){const t=current();t.excursions=t.excursions.filter(e=>String(e.id)!==String(id));persist();renderExcursions()}
+function renderExcursions(){$('excursionList').innerHTML=[...current().excursions].sort((a,b)=>a.date.localeCompare(b.date)).map(e=>`<div class="entry"><strong>${esc(e.name)}</strong><div class="small">${esc(e.location)} • ${esc(e.date||'No date')} ${esc(e.time)} ${e.cost!==''?'• '+money(e.cost):''}</div><div>${esc(e.notes)}</div><button class="danger" onclick="deleteExcursion('${esc(e.id)}')">Delete</button></div>`).join('')||'<p class="small">No excursions added yet.</p>'}
+function addReminder(){const t=current(),name=val('reminderName'),date=val('reminderDate'),time=val('reminderTime');if(!name||!date||!time)return alert('Enter a reminder name, date, and time.');t.reminders.push({id:uid(),name,category:val('reminderCategory'),date,time,done:false,notified:false});for(const id of ['reminderName','reminderDate','reminderTime'])$(id).value='';persist();renderReminders();checkReminders()}
+function toggleReminder(id){const r=current().reminders.find(x=>String(x.id)===String(id));if(r){r.done=!r.done;persist();renderReminders()}}
+function deleteReminder(id){const t=current();t.reminders=t.reminders.filter(r=>String(r.id)!==String(id));persist();renderReminders()}
+function renderReminders(){const t=current(),old=$('reminderFilter').value,cats=[...new Set(t.reminders.map(r=>r.category))];$('reminderFilter').innerHTML='<option value="All">All Categories</option>'+cats.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');$('reminderFilter').value=cats.includes(old)?old:'All';const filter=$('reminderFilter').value;$('reminderList').innerHTML=[...t.reminders].filter(r=>filter==='All'||r.category===filter).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time)).map(r=>`<div class="item"><input type="checkbox" aria-label="Complete ${esc(r.name)}" ${r.done?'checked':''} onchange="toggleReminder('${esc(r.id)}')"><span class="${r.done?'done':''}"><strong>${esc(r.name)}</strong><br><small>${esc(r.category)} • ${esc(r.date)} ${esc(r.time)}${!r.done&&new Date(r.date+'T'+r.time).getTime()<=Date.now()?' • 🔔 Due':''}</small></span><button class="danger" onclick="deleteReminder('${esc(r.id)}')">×</button></div>`).join('')||'<p class="small">No reminders in this category.</p>'}
+function checkReminders(){const t=current();if(!t)return;let changed=false;const due=[];for(const r of t.reminders){if(!r.done&&!r.notified&&new Date(r.date+'T'+r.time).getTime()<=Date.now()){r.notified=true;changed=true;due.push(r.name)}}if(changed){persist();renderReminders();beep();alert('🔔 Reminder due:\n'+due.join('\n'))}}
+function planText(){const t=current();if(!t)return 'Travel Helper — No trip selected';return [`✈️ Travel Helper: ${t.name}`,`Trip type: ${t.tripType||'Not set'}`,`Destination: ${t.destination||'Not set'}`,`Departure: ${t.departure||'Not set'} ${t.departureTime||''}`,`Return: ${t.returnDate||'Not set'}`,`Budget: ${money(t.budget)} | Spent: ${money(t.expenses.reduce((s,e)=>s+Number(e.amount||0),0))} | Remaining: ${money(remaining(t))}`,`Budget alert below: ${t.budgetThreshold===''?'Not set':money(t.budgetThreshold)}`,'','PACKING:',...t.items.map(i=>`${i.done?'[x]':'[ ]'} ${i.category}: ${i.name}`),'','EXPENSES:',...t.expenses.map(e=>`${e.name}: ${money(e.amount)} (${e.category})`),'','ITINERARY:',...t.activities.map(a=>`${a.date} ${a.time} — ${a.name} (${a.category}) ${a.notes}`),'','EXCURSIONS:',...t.excursions.map(e=>`${e.date} ${e.time} — ${e.name}, ${e.location}, ${e.cost===''?'Cost not set':money(e.cost)} ${e.notes}`),'','REMINDERS:',...t.reminders.map(r=>`${r.done?'[x]':'[ ]'} ${r.date} ${r.time} — ${r.name} (${r.category})`)].join('\n')}
+function openShare(){$('shareMenu').classList.add('open')}function closeShare(){$('shareMenu').classList.remove('open')}
+async function shareNative(){const text=planText();try{if(navigator.share){await navigator.share({title:'Travel Helper',text});closeShare()}else downloadPlan()}catch(e){if(e.name!=='AbortError')alert('Sharing is unavailable on this browser. Try Save to Phone.')}}
+function downloadBlob(blob,filename){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),3000)}
+function downloadPlan(){downloadBlob(new Blob([planText()],{type:'text/plain;charset=utf-8'}),'Travel-Helper-Plan.txt');closeShare()}
+function saveImage(){const lines=planText().split('\n').slice(0,75),canvas=document.createElement('canvas'),ctx=canvas.getContext('2d');canvas.width=1000;canvas.height=Math.max(500,lines.length*31+100);ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#10243b';ctx.font='bold 28px sans-serif';ctx.fillText('✈ Travel Helper',35,48);ctx.font='20px sans-serif';lines.forEach((line,i)=>ctx.fillText(line.slice(0,85),35,95+i*31));canvas.toBlob(blob=>{if(blob)downloadBlob(blob,'Travel-Helper-Plan.png')},'image/png');closeShare();alert('Image created. On iPhone, open the downloaded image and use Share → Save Image to put it in Photos.')}
+function emailPlan(){location.href='mailto:?subject='+encodeURIComponent('Travel Helper Trip Plan')+'&body='+encodeURIComponent(planText());closeShare()}
+function textPlan(){location.href='sms:&body='+encodeURIComponent(planText());closeShare()}
+function printPlan(){closeShare();window.print()}
+
+function addBooking(){const t=current();if(!t)return alert('Create or select a trip first.');const name=val('bookingName'),provider=val('bookingProvider'),costRaw=val('bookingCost'),cost=costRaw===''?0:Number(costRaw),date=val('bookingDate');if(!name)return alert('Enter a booking name.');if(!Number.isFinite(cost)||cost<0)return alert('Enter a valid cost.');if($('bookingToItinerary').checked&&!date)return alert('Choose a date to add this booking to the itinerary.');const id=uid(),type=val('bookingType'),time=val('bookingTime'),confirmation=val('bookingConfirmation'),notes=val('bookingNotes');const b={id,name,provider,type,date,time,confirmation,cost,notes,activityId:null,expenseId:null};if($('bookingToItinerary').checked){b.activityId=uid();t.activities.push({id:b.activityId,name:name,category:type,date,time,notes:[provider,confirmation?'Confirmation: '+confirmation:'',notes].filter(Boolean).join(' • ')})}if($('bookingToBudget').checked&&cost>0){b.expenseId=uid();t.expenses.push({id:b.expenseId,name:name,category:type,amount:cost})}t.bookings.push(b);persist();renderBookings();renderItinerary();renderBudget();for(const id of ['bookingName','bookingProvider','bookingDate','bookingTime','bookingConfirmation','bookingCost','bookingNotes'])$(id).value='';$('bookingToBudget').checked=false;alert('Booking saved to your trip!')}
+function deleteBooking(id){const t=current();if(!t)return;const b=t.bookings.find(x=>String(x.id)===String(id));if(!b||!confirm('Remove this saved booking?'))return;if(b.activityId&&confirm('Also remove the linked itinerary entry?'))t.activities=t.activities.filter(x=>String(x.id)!==String(b.activityId));if(b.expenseId&&confirm('Also remove the linked budget expense?'))t.expenses=t.expenses.filter(x=>String(x.id)!==String(b.expenseId));t.bookings=t.bookings.filter(x=>String(x.id)!==String(id));persist();renderBookings();renderItinerary();renderBudget()}
+function renderBookings(){const t=current();$('bookingList').innerHTML=!t?'<p class="small">Select a trip to save bookings.</p>':(t.bookings||[]).map(b=>`<div class="entry"><strong>${esc(b.name)}</strong><p class="small">${esc(b.type)} • ${esc(b.provider||'Provider not set')} • ${esc(b.date||'Date not set')} ${esc(b.time||'')} • ${money(b.cost)}</p>${b.confirmation?`<p>Confirmation: ${esc(b.confirmation)}</p>`:''}${b.notes?`<p>${esc(b.notes)}</p>`:''}<button class="danger" onclick="deleteBooking('${esc(b.id)}')">Delete Booking</button></div>`).join('')||'<p class="small">No bookings saved yet.</p>'}
+init();
+</script></body></html>
