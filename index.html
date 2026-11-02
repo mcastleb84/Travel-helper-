@@ -1,50 +1,1263 @@
-/* Fix Travel Helper layout alignment */
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#10243b">
+<title>Travel Helper</title>
 
-*, *::before, *::after {
-    box-sizing: border-box;
+<style>
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+  color:#183047;
+  background:#cbd0d2;
+  background-image:repeating-linear-gradient(
+    125deg,transparent 0,transparent 38px,
+    rgba(50,203,207,.045) 39px,
+    rgba(95,225,221,.065) 46px,
+    transparent 56px,transparent 112px
+  );
+  min-height:100vh;
+}
+header{
+  background:linear-gradient(135deg,#10243b,#087caa);
+  color:white;
+  padding:18px 12px;
+  text-align:center;
+}
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:8px;
+}
+.topbar h1{font-size:clamp(19px,5vw,29px);margin:0}
+header p{margin:10px 0 0}
+main{max-width:850px;margin:auto;padding:12px}
+.card{
+  background:white;
+  border-radius:15px;
+  padding:17px;
+  margin-bottom:15px;
+  box-shadow:0 3px 12px #0001;
+  min-width:0;
+}
+h2{font-size:21px;margin:0 0 15px}
+h3{font-size:17px;margin:15px 0 8px}
+p{line-height:1.5}
+label{display:block;font-weight:650;font-size:14px;margin:11px 0 5px}
+input:not([type=checkbox]),select,textarea{
+  display:block;
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  padding:12px;
+  margin:5px 0 13px;
+  font:16px Arial,sans-serif;
+  border:1px solid #ccd6df;
+  border-radius:9px;
+  background:white;
+  color:#183047;
+}
+textarea{min-height:85px;resize:vertical}
+input[type=checkbox]{width:21px;height:21px;flex-shrink:0}
+button{
+  border:0;
+  border-radius:9px;
+  padding:12px 14px;
+  background:#087caa;
+  color:white;
+  font-size:15px;
+  font-weight:650;
+  cursor:pointer;
+}
+button:active{opacity:.75}
+.secondary{background:#e7eef5;color:#18324b}
+.danger{background:#b42336}
+.row{display:flex;flex-wrap:wrap;gap:9px;margin:10px 0}
+.row>*{flex:1;min-width:0}
+.small{font-size:13px;color:#617184}
+.page{display:none}
+.page.active{display:block}
+.list-item{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:11px 0;
+  border-bottom:1px solid #e5eaf0;
+}
+.list-item span{flex:1;overflow-wrap:anywhere}
+.completed{text-decoration:line-through;color:#888}
+.entry{padding:12px 0;border-bottom:1px solid #e5eaf0;overflow-wrap:anywhere}
+.entry button{margin-top:7px}
+.muted{color:#617184}
+.notice{
+  background:#e9f5fa;
+  border-radius:10px;
+  padding:12px;
+  margin:10px 0;
+}
+.warning{
+  background:#fff1d6;
+  color:#7b3900;
+  border:1px solid #efc57c;
+  padding:12px;
+  border-radius:10px;
+  margin:10px 0;
+}
+.stats{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px;
+  margin:15px 0;
+}
+.stat{
+  background:#edf4fa;
+  border-radius:10px;
+  padding:12px 5px;
+  text-align:center;
+}
+.stat strong{display:block;font-size:clamp(14px,4vw,21px);overflow-wrap:anywhere}
+.timer-card{
+  background:linear-gradient(135deg,#10243b,#087caa);
+  color:white;
+  text-align:center;
+}
+.timer-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:8px;
+  margin:18px 0;
+}
+.timer-unit{
+  background:#ffffff26;
+  border-radius:10px;
+  padding:12px 3px;
+}
+.timer-unit strong{
+  display:block;
+  font-size:clamp(18px,5vw,31px);
+  font-variant-numeric:tabular-nums;
+}
+.timer-unit span{font-size:12px}
+.sidebar{
+  position:fixed;
+  inset:0 auto 0 0;
+  width:min(350px,90vw);
+  background:#d4d9db;
+  padding:18px;
+  overflow-y:auto;
+  z-index:1001;
+  transform:translateX(-110%);
+  transition:transform .25s;
+  box-shadow:5px 0 20px #0003;
+}
+.sidebar.open{transform:translateX(0)}
+.sidebar button{
+  display:block;
+  width:100%;
+  text-align:left;
+  margin-bottom:9px;
+  background:white;
+  color:#183047;
+  padding:15px;
+}
+.sidebar .close-button{background:#10243b;color:white;text-align:center}
+.overlay{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:#0008;
+  z-index:1000;
+}
+.overlay.open{display:block}
+.share-menu{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:#0009;
+  z-index:2000;
+  align-items:center;
+  justify-content:center;
+  padding:15px;
+}
+.share-menu.open{display:flex}
+.share-box{
+  width:100%;
+  max-width:410px;
+  max-height:90vh;
+  overflow:auto;
+  background:white;
+  border-radius:15px;
+  padding:20px;
+}
+.share-box button{display:block;width:100%;margin:8px 0}
+.booking-link{
+  display:block;
+  text-decoration:none;
+  font-weight:bold;
+  background:#eaf6f7;
+  color:#075b72;
+  border-radius:10px;
+  padding:14px;
+  margin:9px 0;
+}
+.category-title{
+  background:#edf4fa;
+  padding:10px;
+  border-radius:9px;
+  margin-top:15px;
+  font-weight:bold;
+}
+.pill{
+  display:inline-block;
+  background:#eaf6f7;
+  padding:5px 9px;
+  border-radius:20px;
+  font-size:12px;
+  margin:3px;
+}
+@media(max-width:600px){
+  main{padding:11px}
+  .card{padding:15px}
+  .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,135px),1fr))}
+  .row>*{width:100%}
+}
+@media print{
+  header button,.sidebar,.overlay,.share-menu,.no-print{display:none!important}
+  body{background:white}
+  .card{box-shadow:none;border:1px solid #ddd}
+  .page{display:block!important}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="topbar">
+    <button onclick="openSidebar()">☰ Menu</button>
+    <h1>✈️ Travel Helper</h1>
+    <button onclick="openShare()">↗</button>
+  </div>
+  <p>Plan • Pack • Budget • Explore</p>
+</header>
+
+<div id="overlay" class="overlay" onclick="closeSidebar()"></div>
+
+<aside id="sidebar" class="sidebar">
+  <h2>✈️ Trip Tools</h2>
+  <button onclick="showPage('dashboard')">🏠 Dashboard</button>
+  <button onclick="showPage('checklist')">🧳 Travel Checklist</button>
+  <button onclick="showPage('budget')">💰 Budget Tracker</button>
+  <button onclick="showPage('itinerary')">📅 Travel Itinerary</button>
+  <button onclick="showPage('excursions')">🏝️ Excursions</button>
+  <button onclick="showPage('reminders')">🔔 Reminders</button>
+  <button onclick="showPage('tracker')">⏱️ Time Tracker</button>
+  <button onclick="showPage('booking')">🌴 Book Your Vacation</button>
+  <button onclick="openShare()">📤 Share & Export</button>
+  <button class="close-button" onclick="closeSidebar()">✕ Close Menu</button>
+</aside>
+
+<main>
+
+<section id="dashboard" class="page active">
+  <div class="card timer-card">
+    <h2>⏳ Vacation Countdown</h2>
+    <div class="timer-grid">
+      <div class="timer-unit"><strong id="homeDays">—</strong><span>Days</span></div>
+      <div class="timer-unit"><strong id="homeHours">—</strong><span>Hours</span></div>
+      <div class="timer-unit"><strong id="homeMinutes">—</strong><span>Minutes</span></div>
+      <div class="timer-unit"><strong id="homeSeconds">—</strong><span>Seconds</span></div>
+    </div>
+    <p id="countdownMessage">Create a trip to begin.</p>
+  </div>
+
+  <div class="card">
+    <h2>🌎 My Trips</h2>
+    <label for="tripSelect">Select Trip</label>
+    <select id="tripSelect" onchange="selectTrip()"></select>
+    <div class="row">
+      <button onclick="newTrip()">+ New Trip</button>
+      <button class="secondary" onclick="renameTrip()">Rename</button>
+      <button class="danger" onclick="deleteTrip()">Delete</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📅 Trip Details</h2>
+    <label for="tripType">Type of Trip</label>
+    <select id="tripType">
+      <option value="">Select Trip Type</option>
+      <option>Cruise</option>
+      <option>Beach Vacation</option>
+      <option>International Travel</option>
+      <option>Road Trip</option>
+      <option>City Break</option>
+      <option>Camping</option>
+      <option>Family Vacation</option>
+      <option>Other</option>
+    </select>
+    <label for="destination">Destination</label>
+    <input id="destination" placeholder="Bahamas, Paris, Miami...">
+    <label for="departure">Departure Date</label>
+    <input id="departure" type="date">
+    <label for="departureTime">Departure Time</label>
+    <input id="departureTime" type="time">
+    <label for="returnDate">Return Date</label>
+    <input id="returnDate" type="date">
+    <button onclick="saveTripDetails()">Save Trip Details</button>
+  </div>
+
+  <div class="card">
+    <h2>🧭 Quick Access</h2>
+    <div class="row">
+      <button onclick="showPage('checklist')">Checklist</button>
+      <button onclick="showPage('budget')">Budget</button>
+      <button onclick="showPage('itinerary')">Itinerary</button>
+      <button onclick="showPage('tracker')">Time Tracker</button>
+    </div>
+  </div>
+</section>
+
+<section id="checklist" class="page">
+  <div class="card">
+    <h2>🧳 Travel Checklist</h2>
+    <p class="muted">Add items by category, then check them off as you pack.</p>
+    <label>Category</label>
+    <select id="checkCategory">
+      <option>Clothing</option>
+      <option>Toiletries</option>
+      <option>Documents</option>
+      <option>Electronics</option>
+      <option>Medications</option>
+      <option>Travel Essentials</option>
+      <option>Other</option>
+    </select>
+    <label>Item Name</label>
+    <input id="checkName" placeholder="Passport, sunglasses, charger...">
+    <button onclick="addChecklist()">+ Add Item</button>
+    <div id="checklistItems"></div>
+  </div>
+</section>
+
+<section id="budget" class="page">
+  <div class="card">
+    <h2>💰 Travel Budget Tracker</h2>
+    <p class="muted">Set a total budget and a warning threshold.</p>
+    <label>Total Trip Budget ($)</label>
+    <input id="budgetTotal" type="number" min="0" step=".01" placeholder="2000">
+    <label>Alert When Remaining Balance Falls Below ($)</label>
+    <input id="budgetAlert" type="number" min="0" step=".01" placeholder="300">
+    <button onclick="saveBudgetSettings()">Save Budget & Alert</button>
+    <div class="stats">
+      <div class="stat"><small>Budget</small><strong id="budgetStat">$0</strong></div>
+      <div class="stat"><small>Spent</small><strong id="spentStat">$0</strong></div>
+      <div class="stat"><small>Remaining</small><strong id="remainingStat">$0</strong></div>
+    </div>
+    <div id="budgetWarning"></div>
+    <h3>Add an Expense</h3>
+    <label>Expense Name</label>
+    <input id="expenseName" placeholder="Hotel, airfare, meals...">
+    <label>Category</label>
+    <select id="expenseCategory">
+      <option>Transportation</option>
+      <option>Lodging</option>
+      <option>Food & Drinks</option>
+      <option>Excursions</option>
+      <option>Shopping</option>
+      <option>Other</option>
+    </select>
+    <label>Amount ($)</label>
+    <input id="expenseAmount" type="number" min="0" step=".01" placeholder="125.00">
+    <button onclick="addExpense()">+ Add Expense</button>
+    <h3>Expense History</h3>
+    <div id="expenseList"></div>
+  </div>
+</section>
+
+<section id="itinerary" class="page">
+  <div class="card">
+    <h2>📅 Travel Itinerary</h2>
+    <p class="muted">Build your daily travel schedule.</p>
+    <label>Date</label>
+    <input id="itineraryDate" type="date">
+    <label>Time</label>
+    <input id="itineraryTime" type="time">
+    <label>Activity</label>
+    <input id="itineraryTitle" placeholder="Flight, dinner, sightseeing...">
+    <label>Location</label>
+    <input id="itineraryLocation" placeholder="Airport, hotel, restaurant...">
+    <label>Notes</label>
+    <textarea id="itineraryNotes" placeholder="Confirmation numbers, directions, details..."></textarea>
+    <button onclick="addItinerary()">+ Add Itinerary Item</button>
+    <h3>My Itinerary</h3>
+    <div id="itineraryList"></div>
+  </div>
+</section>
+
+<section id="excursions" class="page">
+  <div class="card">
+    <h2>🏝️ Excursion Planner</h2>
+    <label>Excursion Name</label>
+    <input id="excursionName" placeholder="Snorkeling, city tour...">
+    <label>Date</label>
+    <input id="excursionDate" type="date">
+    <label>Time</label>
+    <input id="excursionTime" type="time">
+    <label>Location</label>
+    <input id="excursionLocation" placeholder="Nassau, Cozumel...">
+    <label>Estimated Cost ($)</label>
+    <input id="excursionCost" type="number" min="0" step=".01" placeholder="75">
+    <label>Booking Link (Optional)</label>
+    <input id="excursionLink" type="url" placeholder="https://...">
+    <label>Notes</label>
+    <textarea id="excursionNotes" placeholder="Meeting point, what to bring..."></textarea>
+    <button onclick="addExcursion()">+ Add Excursion</button>
+    <h3>My Excursions</h3>
+    <div id="excursionList"></div>
+  </div>
+</section>
+
+<section id="reminders" class="page">
+  <div class="card">
+    <h2>🔔 Travel Reminders</h2>
+    <label>Reminder</label>
+    <input id="reminderName" placeholder="Check in for flight, renew passport...">
+    <label>Date</label>
+    <input id="reminderDate" type="date">
+    <label>Time</label>
+    <input id="reminderTime" type="time">
+    <button onclick="addReminder()">+ Add Reminder</button>
+    <p class="small">Reminders are saved here. Sound alerts work while this website is open; background phone notifications are not included.</p>
+    <h3>My Reminders</h3>
+    <div id="reminderList"></div>
+  </div>
+</section>
+
+<section id="tracker" class="page">
+  <div class="card timer-card">
+    <h2>⏱️ Time Tracker</h2>
+    <p>Time Until Your Vacation</p>
+    <div class="timer-grid">
+      <div class="timer-unit"><strong id="trackDays">—</strong><span>Days</span></div>
+      <div class="timer-unit"><strong id="trackHours">—</strong><span>Hours</span></div>
+      <div class="timer-unit"><strong id="trackMinutes">—</strong><span>Minutes</span></div>
+      <div class="timer-unit"><strong id="trackSeconds">—</strong><span>Seconds</span></div>
+    </div>
+    <p id="trackerMessage">Choose a departure date on your dashboard.</p>
+  </div>
+  <div class="card">
+    <h2>📍 Trip Timeline</h2>
+    <div id="tripTimeline"></div>
+    <button onclick="showPage('dashboard')">Edit Trip Dates</button>
+  </div>
+</section>
+
+<section id="booking" class="page">
+  <div class="card">
+    <h2>🌴 Book Your Vacation</h2>
+    <p>Compare travel options using these booking providers.</p>
+    <a class="booking-link" href="https://www.booking.com/" target="_blank" rel="noopener noreferrer">🏨 Booking.com</a>
+    <a class="booking-link" href="https://www.expedia.com/" target="_blank" rel="noopener noreferrer">✈️ Expedia</a>
+    <a class="booking-link" href="https://www.priceline.com/" target="_blank" rel="noopener noreferrer">🌎 Priceline</a>
+    <a class="booking-link" href="https://www.kayak.com/" target="_blank" rel="noopener noreferrer">🔎 KAYAK</a>
+    <a class="booking-link" href="https://www.carnival.com/" target="_blank" rel="noopener noreferrer">🚢 Carnival Cruise Line</a>
+    <a class="booking-link" href="https://www.royalcaribbean.com/" target="_blank" rel="noopener noreferrer">🚢 Royal Caribbean</a>
+    <p class="small">These links open external websites. Travel Helper does not process bookings or payments.</p>
+  </div>
+
+  <div class="card">
+    <h2>📋 My Reservations</h2>
+    <label>Reservation Name</label>
+    <input id="bookingName" placeholder="Flight, hotel, cruise...">
+    <label>Provider</label>
+    <input id="bookingProvider" placeholder="Airline, hotel, cruise line...">
+    <label>Confirmation Number</label>
+    <input id="bookingConfirmation" placeholder="ABC123">
+    <label>Date</label>
+    <input id="bookingDate" type="date">
+    <label>Notes</label>
+    <textarea id="bookingNotes" placeholder="Check-in details..."></textarea>
+    <button onclick="addBooking()">+ Save Reservation</button>
+    <div id="bookingList"></div>
+    <p class="small">Avoid saving payment card details or passwords here. Information is stored locally on this device.</p>
+  </div>
+</section>
+
+</main>
+
+<div id="shareMenu" class="share-menu" onclick="if(event.target===this)closeShare()">
+  <div class="share-box">
+    <h2>📤 Share & Export</h2>
+    <button onclick="shareNative()">📱 Share Using Phone</button>
+    <button onclick="downloadPlan()">📁 Save to Files</button>
+    <button onclick="saveImage()">🖼️ Save Summary Image</button>
+    <button onclick="emailPlan()">✉️ Email Trip</button>
+    <button onclick="textPlan()">💬 Text Trip</button>
+    <button onclick="shareFacebook()">📘 Share on Facebook</button>
+    <button onclick="shareInstagram()">📸 Share to Instagram</button>
+    <button onclick="printPlan()">🖨️ Print Trip</button>
+    <button class="secondary" onclick="closeShare()">Close</button>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+const STORAGE="travelHelperTripsV1";
+const CURRENT_KEY="travelHelperCurrentTripV1";
+let trips=[];
+let currentId=null;
+let alertPlayedFor="";
+let reminderPlayed=new Set();
+let audioContext=null;
+
+const $=id=>document.getElementById(id);
+const money=n=>"$"+Number(n||0).toLocaleString("en-US",{
+  minimumFractionDigits:2,
+  maximumFractionDigits:2
+});
+const uid=()=>String(Date.now())+Math.random().toString(36).slice(2,8);
+const escapeHTML=value=>String(value??"").replace(/[&<>"']/g,c=>({
+  "&":"&amp;","<":"&lt;",">":"&gt;",
+  '"':"&quot;","'":"&#39;"
+}[c]));
+
+function freshTrip(name="My Vacation"){
+  return {
+    id:uid(),
+    name,
+    type:"",
+    destination:"",
+    departure:"",
+    departureTime:"",
+    returnDate:"",
+    checklist:[],
+    expenses:[],
+    budget:0,
+    budgetAlert:0,
+    itinerary:[],
+    excursions:[],
+    reminders:[],
+    bookings:[]
+  };
 }
 
-html, body {
-    width: 100%;
-    max-width: 100%;
-    margin: 0;
-    overflow-x: hidden;
+function normalizeTrip(t){
+  const base=freshTrip();
+  const obj={...base,...t};
+  obj.id=String(obj.id||uid());
+  obj.name=String(obj.name||"My Vacation");
+  for(const key of [
+    "checklist","expenses","itinerary",
+    "excursions","reminders","bookings"
+  ]){
+    if(!Array.isArray(obj[key]))obj[key]=[];
+  }
+  obj.budget=Number(obj.budget)||0;
+  obj.budgetAlert=Number(obj.budgetAlert)||0;
+  return obj;
 }
 
-input,
-select,
-textarea {
-    display: block;
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
-    box-sizing: border-box;
-    margin: 8px 0 16px;
-    padding: 12px;
-    border-radius: 8px;
+function save(){
+  try{
+    localStorage.setItem(STORAGE,JSON.stringify(trips));
+    localStorage.setItem(CURRENT_KEY,String(currentId||""));
+  }catch(e){
+    alert("Your browser could not save the trip. Check available storage.");
+  }
 }
 
-form,
-.form-group {
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
+function currentTrip(){
+  return trips.find(t=>t.id===currentId)||null;
 }
 
-@media (max-width: 600px) {
-    .container,
-    .card,
-    .content {
-        width: 100%;
-        max-width: 100%;
-        min-width: 0;
-        padding-left: 15px;
-        padding-right: 15px;
+function ensureTrip(){
+  const t=currentTrip();
+  if(!t){
+    alert("Create or select a trip first.");
+    showPage("dashboard");
+    return null;
+  }
+  return t;
+}
+
+function init(){
+  try{
+    const stored=JSON.parse(localStorage.getItem(STORAGE)||"[]");
+    if(Array.isArray(stored))trips=stored.map(normalizeTrip);
+  }catch(e){trips=[]}
+
+  if(!trips.length)trips=[freshTrip("My First Trip")];
+
+  const savedId=localStorage.getItem(CURRENT_KEY);
+  currentId=trips.some(t=>t.id===savedId)?savedId:trips[0].id;
+
+  renderAll();
+  setInterval(()=>{
+    updateCountdown();
+    checkReminders();
+  },1000);
+}
+
+function openSidebar(){
+  $("sidebar").classList.add("open");
+  $("overlay").classList.add("open");
+}
+function closeSidebar(){
+  $("sidebar").classList.remove("open");
+  $("overlay").classList.remove("open");
+}
+function showPage(id){
+  const target=$(id);
+  if(!target||!target.classList.contains("page"))return;
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  target.classList.add("active");
+  closeSidebar();
+  window.scrollTo({top:0,behavior:"smooth"});
+  if(id==="tracker")updateCountdown();
+}
+
+function renderTripSelect(){
+  $("tripSelect").innerHTML=trips.map(t=>
+    `<option value="${escapeHTML(t.id)}">${escapeHTML(t.name)}</option>`
+  ).join("");
+  $("tripSelect").value=currentId;
+}
+
+function selectTrip(){
+  currentId=$("tripSelect").value;
+  alertPlayedFor="";
+  save();
+  renderAll();
+}
+
+function newTrip(){
+  const name=prompt("Name your new trip:","My Vacation");
+  if(name===null)return;
+  const t=freshTrip(name.trim()||"My Vacation");
+  trips.push(t);
+  currentId=t.id;
+  save();
+  renderAll();
+  showPage("dashboard");
+}
+
+function renameTrip(){
+  const t=ensureTrip();
+  if(!t)return;
+  const name=prompt("Rename your trip:",t.name);
+  if(name===null)return;
+  if(!name.trim())return alert("Enter a trip name.");
+  t.name=name.trim();
+  save();
+  renderAll();
+}
+
+function deleteTrip(){
+  const t=ensureTrip();
+  if(!t)return;
+  if(!confirm(`Delete "${t.name}" and all its saved information?`))return;
+  trips=trips.filter(x=>x.id!==t.id);
+  if(!trips.length)trips=[freshTrip("My First Trip")];
+  currentId=trips[0].id;
+  alertPlayedFor="";
+  save();
+  renderAll();
+}
+
+function renderDetails(){
+  const t=currentTrip();
+  if(!t)return;
+  $("tripType").value=t.type||"";
+  $("destination").value=t.destination||"";
+  $("departure").value=t.departure||"";
+  $("departureTime").value=t.departureTime||"";
+  $("returnDate").value=t.returnDate||"";
+}
+
+function saveTripDetails(){
+  const t=ensureTrip();
+  if(!t)return;
+  t.type=$("tripType").value;
+  t.destination=$("destination").value.trim();
+  t.departure=$("departure").value;
+  t.departureTime=$("departureTime").value;
+  t.returnDate=$("returnDate").value;
+  if(t.returnDate&&t.departure&&t.returnDate<t.departure){
+    alert("Your return date cannot be before your departure date.");
+    return;
+  }
+  save();
+  updateCountdown();
+  alert("Trip details saved!");
+}
+
+function departureDate(t){
+  if(!t||!t.departure)return null;
+  const d=new Date(t.departure+"T"+(t.departureTime||"00:00")+":00");
+  return Number.isNaN(d.getTime())?null:d;
+}
+
+function setClock(prefix,d,h,m,s){
+  $(prefix+"Days").textContent=String(d);
+  $(prefix+"Hours").textContent=String(h).padStart(2,"0");
+  $(prefix+"Minutes").textContent=String(m).padStart(2,"0");
+  $(prefix+"Seconds").textContent=String(s).padStart(2,"0");
+}
+
+function updateCountdown(){
+  const t=currentTrip();
+  const date=departureDate(t);
+  if(!date){
+    setClock("home","—","—","—","—");
+    setClock("track","—","—","—","—");
+    $("countdownMessage").textContent="Set your departure date to begin.";
+    $("trackerMessage").textContent="Choose a departure date on your dashboard.";
+    $("tripTimeline").textContent="Your trip timeline will appear here.";
+    return;
+  }
+  const remaining=Math.max(0,date.getTime()-Date.now());
+  const days=Math.floor(remaining/86400000);
+  const hours=Math.floor(remaining/3600000)%24;
+  const minutes=Math.floor(remaining/60000)%60;
+  const seconds=Math.floor(remaining/1000)%60;
+  setClock("home",days,hours,minutes,seconds);
+  setClock("track",days,hours,minutes,seconds);
+  const message=remaining===0?"Your departure time has arrived!":
+    `${t.name} • ${t.destination||"Your adventure"} awaits!`;
+  $("countdownMessage").textContent=message;
+  $("trackerMessage").textContent=message;
+  $("tripTimeline").innerHTML=
+    `<p><strong>Trip:</strong> ${escapeHTML(t.name)}</p>
+     <p><strong>Destination:</strong> ${escapeHTML(t.destination||"Not set")}</p>
+     <p><strong>Departure:</strong> ${escapeHTML(date.toLocaleString())}</p>
+     <p><strong>Return:</strong> ${escapeHTML(t.returnDate||"Not set")}</p>`;
+}
+
+function addChecklist(){
+  const t=ensureTrip();
+  if(!t)return;
+  const name=$("checkName").value.trim();
+  if(!name)return alert("Enter an item name.");
+  t.checklist.push({
+    id:uid(),name,category:$("checkCategory").value,done:false
+  });
+  $("checkName").value="";
+  save();
+  renderChecklist();
+}
+
+function toggleChecklist(id){
+  const t=currentTrip();
+  const item=t?.checklist.find(x=>x.id===id);
+  if(!item)return;
+  item.done=!item.done;
+  save();
+  renderChecklist();
+}
+
+function removeItem(type,id){
+  const t=currentTrip();
+  if(!t||!Array.isArray(t[type]))return;
+  t[type]=t[type].filter(x=>x.id!==id);
+  save();
+  renderAll();
+}
+
+function renderChecklist(){
+  const t=currentTrip();
+  const root=$("checklistItems");
+  if(!t?.checklist.length){
+    root.innerHTML='<p class="muted">No checklist items yet.</p>';
+    return;
+  }
+  const items=t.checklist;
+  const done=items.filter(x=>x.done).length;
+  let html=`<p class="notice">${done} of ${items.length} items packed</p>`;
+  const categories=[...new Set(items.map(x=>x.category||"Other"))];
+  for(const category of categories){
+    html+=`<div class="category-title">${escapeHTML(category)}</div>`;
+    for(const item of items.filter(x=>(x.category||"Other")===category)){
+      html+=`<div class="list-item">
+        <input type="checkbox" ${item.done?"checked":""}
+          onchange="toggleChecklist('${item.id}')"
+          aria-label="Mark ${escapeHTML(item.name)} packed">
+        <span class="${item.done?"completed":""}">${escapeHTML(item.name)}</span>
+        <button class="danger" onclick="removeItem('checklist','${item.id}')">✕</button>
+      </div>`;
     }
-
-    input,
-    select,
-    textarea {
-        font-size: 16px;
-    }
+  }
+  root.innerHTML=html;
 }
+
+function saveBudgetSettings(){
+  const t=ensureTrip();
+  if(!t)return;
+  const budget=Number($("budgetTotal").value);
+  const threshold=Number($("budgetAlert").value);
+  if(budget<0||threshold<0)return alert("Amounts cannot be negative.");
+  t.budget=budget;
+  t.budgetAlert=threshold;
+  alertPlayedFor="";
+  save();
+  renderBudget();
+  alert("Budget settings saved.");
+}
+
+function addExpense(){
+  const t=ensureTrip();
+  if(!t)return;
+  const name=$("expenseName").value.trim();
+  const amount=Number($("expenseAmount").value);
+  if(!name||!Number.isFinite(amount)||amount<=0){
+    return alert("Enter an expense name and an amount greater than zero.");
+  }
+  t.expenses.push({
+    id:uid(),name,amount,
+    category:$("expenseCategory").value,
+    date:new Date().toISOString()
+  });
+  $("expenseName").value="";
+  $("expenseAmount").value="";
+  save();
+  renderBudget();
+}
+
+function playAlert(){
+  try{
+    const AudioCtx=window.AudioContext||window.webkitAudioContext;
+    if(!AudioCtx)return;
+    audioContext=audioContext||new AudioCtx();
+    audioContext.resume();
+    const now=audioContext.currentTime;
+    for(let i=0;i<3;i++){
+      const osc=audioContext.createOscillator();
+      const gain=audioContext.createGain();
+      osc.type="sine";
+      osc.frequency.value=880;
+      gain.gain.setValueAtTime(.001,now+i*.35);
+      gain.gain.exponentialRampToValueAtTime(.18,now+i*.35+.03);
+      gain.gain.exponentialRampToValueAtTime(.001,now+i*.35+.25);
+      osc.connect(gain);
+      gain.connect(audioContext.destination);
+      osc.start(now+i*.35);
+      osc.stop(now+i*.35+.27);
+    }
+  }catch(e){}
+}
+
+function renderBudget(){
+  const t=currentTrip();
+  if(!t)return;
+  $("budgetTotal").value=t.budget||"";
+  $("budgetAlert").value=t.budgetAlert||"";
+  const spent=t.expenses.reduce((sum,e)=>sum+(Number(e.amount)||0),0);
+  const remaining=t.budget-spent;
+  $("budgetStat").textContent=money(t.budget);
+  $("spentStat").textContent=money(spent);
+  $("remainingStat").textContent=money(remaining);
+
+  const warning=$("budgetWarning");
+  if(t.budget>0&&remaining<t.budgetAlert){
+    warning.innerHTML=`<div class="warning">
+      ⚠️ Budget alert! Your remaining balance is ${money(remaining)},
+      below your ${money(t.budgetAlert)} threshold.
+    </div>`;
+    const key=t.id+"|"+remaining+"|"+t.budgetAlert;
+    if(alertPlayedFor!==key){
+      alertPlayedFor=key;
+      playAlert();
+    }
+  }else if(t.budget>0&&remaining<0){
+    warning.innerHTML='<div class="warning">⚠️ You are over budget.</div>';
+    const key=t.id+"|over|"+remaining;
+    if(alertPlayedFor!==key){
+      alertPlayedFor=key;
+      playAlert();
+    }
+  }else{
+    warning.innerHTML="";
+    alertPlayedFor="";
+  }
+
+  $("expenseList").innerHTML=t.expenses.length
+    ?t.expenses.map(e=>`<div class="entry">
+      <strong>${escapeHTML(e.name)}</strong> — ${money(e.amount)}
+      <div class="small">${escapeHTML(e.category||"Other")}</div>
+      <button class="danger" onclick="removeItem('expenses','${e.id}')">Delete</button>
+    </div>`).join("")
+    :'<p class="muted">No expenses yet.</p>';
+}
+
+function addItinerary(){
+  const t=ensureTrip();
+  if(!t)return;
+  const title=$("itineraryTitle").value.trim();
+  if(!title)return alert("Enter an activity.");
+  t.itinerary.push({
+    id:uid(),title,
+    date:$("itineraryDate").value,
+    time:$("itineraryTime").value,
+    location:$("itineraryLocation").value.trim(),
+    notes:$("itineraryNotes").value.trim()
+  });
+  ["itineraryTitle","itineraryLocation","itineraryNotes"].forEach(id=>$(id).value="");
+  save();
+  renderItinerary();
+}
+
+function renderItinerary(){
+  const t=currentTrip();
+  const items=[...(t?.itinerary||[])].sort((a,b)=>
+    (a.date+" "+a.time).localeCompare(b.date+" "+b.time)
+  );
+  $("itineraryList").innerHTML=items.length
+    ?items.map(x=>`<div class="entry">
+      <strong>${escapeHTML(x.title)}</strong>
+      <div>${escapeHTML(x.date||"Date not set")} ${escapeHTML(x.time||"")}</div>
+      <div>${escapeHTML(x.location||"")}</div>
+      <div class="small">${escapeHTML(x.notes||"")}</div>
+      <button class="danger" onclick="removeItem('itinerary','${x.id}')">Delete</button>
+    </div>`).join("")
+    :'<p class="muted">No itinerary items yet.</p>';
+}
+
+function safeLink(url){
+  try{
+    const parsed=new URL(url);
+    return ["https:","http:"].includes(parsed.protocol)?parsed.href:"";
+  }catch(e){return""}
+}
+
+function addExcursion(){
+  const t=ensureTrip();
+  if(!t)return;
+  const name=$("excursionName").value.trim();
+  if(!name)return alert("Enter an excursion name.");
+  const link=$("excursionLink").value.trim();
+  if(link&&!safeLink(link))return alert("Enter a valid http or https link.");
+  t.excursions.push({
+    id:uid(),name,
+    date:$("excursionDate").value,
+    time:$("excursionTime").value,
+    location:$("excursionLocation").value.trim(),
+    cost:Number($("excursionCost").value)||0,
+    link,
+    notes:$("excursionNotes").value.trim()
+  });
+  ["excursionName","excursionLocation","excursionCost","excursionLink","excursionNotes"]
+    .forEach(id=>$(id).value="");
+  save();
+  renderExcursions();
+}
+
+function renderExcursions(){
+  const t=currentTrip();
+  $("excursionList").innerHTML=t?.excursions.length
+    ?t.excursions.map(x=>`<div class="entry">
+      <strong>${escapeHTML(x.name)}</strong>
+      <div>${escapeHTML(x.date||"")} ${escapeHTML(x.time||"")}</div>
+      <div>${escapeHTML(x.location||"")}</div>
+      <div>Estimated cost: ${money(x.cost)}</div>
+      <div class="small">${escapeHTML(x.notes||"")}</div>
+      ${safeLink(x.link)?`<a class="booking-link" target="_blank" rel="noopener noreferrer" href="${escapeHTML(safeLink(x.link))}">Open Excursion Link ↗</a>`:""}
+      <button class="danger" onclick="removeItem('excursions','${x.id}')">Delete</button>
+    </div>`).join("")
+    :'<p class="muted">No excursions yet.</p>';
+}
+
+function addReminder(){
+  const t=ensureTrip();
+  if(!t)return;
+  const name=$("reminderName").value.trim();
+  if(!name)return alert("Enter a reminder.");
+  t.reminders.push({
+    id:uid(),name,
+    date:$("reminderDate").value,
+    time:$("reminderTime").value,
+    done:false
+  });
+  $("reminderName").value="";
+  save();
+  renderReminders();
+}
+
+function toggleReminder(id){
+  const t=currentTrip();
+  const item=t?.reminders.find(x=>x.id===id);
+  if(!item)return;
+  item.done=!item.done;
+  save();
+  renderReminders();
+}
+
+function renderReminders(){
+  const t=currentTrip();
+  $("reminderList").innerHTML=t?.reminders.length
+    ?t.reminders.map(x=>`<div class="list-item">
+      <input type="checkbox" ${x.done?"checked":""}
+        onchange="toggleReminder('${x.id}')">
+      <span class="${x.done?"completed":""}">
+        <strong>${escapeHTML(x.name)}</strong><br>
+        <small>${escapeHTML(x.date||"")} ${escapeHTML(x.time||"")}</small>
+      </span>
+      <button class="danger" onclick="removeItem('reminders','${x.id}')">✕</button>
+    </div>`).join("")
+    :'<p class="muted">No reminders yet.</p>';
+}
+
+function checkReminders(){
+  const t=currentTrip();
+  if(!t)return;
+  const now=Date.now();
+  for(const r of t.reminders){
+    if(r.done||!r.date||!r.time||reminderPlayed.has(r.id))continue;
+    const due=new Date(r.date+"T"+r.time+":00").getTime();
+    if(Number.isFinite(due)&&now>=due&&now-due<60000){
+      reminderPlayed.add(r.id);
+      playAlert();
+      alert("Travel Reminder: "+r.name);
+      break;
+    }
+  }
+}
+
+function addBooking(){
+  const t=ensureTrip();
+  if(!t)return;
+  const name=$("bookingName").value.trim();
+  if(!name)return alert("Enter a reservation name.");
+  t.bookings.push({
+    id:uid(),name,
+    provider:$("bookingProvider").value.trim(),
+    confirmation:$("bookingConfirmation").value.trim(),
+    date:$("bookingDate").value,
+    notes:$("bookingNotes").value.trim()
+  });
+  ["bookingName","bookingProvider","bookingConfirmation","bookingNotes"]
+    .forEach(id=>$(id).value="");
+  save();
+  renderBookings();
+}
+
+function renderBookings(){
+  const t=currentTrip();
+  $("bookingList").innerHTML=t?.bookings.length
+    ?t.bookings.map(x=>`<div class="entry">
+      <strong>${escapeHTML(x.name)}</strong>
+      <div>Provider: ${escapeHTML(x.provider||"Not set")}</div>
+      <div>Confirmation: ${escapeHTML(x.confirmation||"Not set")}</div>
+      <div>Date: ${escapeHTML(x.date||"Not set")}</div>
+      <div class="small">${escapeHTML(x.notes||"")}</div>
+      <button class="danger" onclick="removeItem('bookings','${x.id}')">Delete</button>
+    </div>`).join("")
+    :'<p class="muted">No reservations saved yet.</p>';
+}
+
+function renderAll(){
+  renderTripSelect();
+  renderDetails();
+  renderChecklist();
+  renderBudget();
+  renderItinerary();
+  renderExcursions();
+  renderReminders();
+  renderBookings();
+  updateCountdown();
+}
+
+function openShare(){
+  closeSidebar();
+  $("shareMenu").classList.add("open");
+}
+function closeShare(){
+  $("shareMenu").classList.remove("open");
+}
+
+function planText(){
+  const t=currentTrip();
+  if(!t)return"Travel Helper";
+  const spent=t.expenses.reduce((s,x)=>s+(Number(x.amount)||0),0);
+  const lines=[
+    "✈️ TRAVEL HELPER",
+    "Trip: "+t.name,
+    "Type: "+(t.type||"Not set"),
+    "Destination: "+(t.destination||"Not set"),
+    "Departure: "+(t.departure||"Not set")+" "+(t.departureTime||""),
+    "Return: "+(t.returnDate||"Not set"),
+    "",
+    "BUDGET",
+    "Total: "+money(t.budget),
+    "Spent: "+money(spent),
+    "Remaining: "+money(t.budget-spent),
+    ""
+  ];
+  if(t.checklist.length){
+    lines.push("CHECKLIST");
+    t.checklist.forEach(x=>lines.push((x.done?"[x] ":"[ ] ")+x.name+" ("+x.category+")"));
+    lines.push("");
+  }
+  if(t.expenses.length){
+    lines.push("EXPENSES");
+    t.expenses.forEach(x=>lines.push(x.name+": "+money(x.amount)));
+    lines.push("");
+  }
+  if(t.itinerary.length){
+    lines.push("ITINERARY");
+    t.itinerary.forEach(x=>lines.push(
+      [x.date,x.time,x.title,x.location,x.notes].filter(Boolean).join(" | ")
+    ));
+    lines.push("");
+  }
+  if(t.excursions.length){
+    lines.push("EXCURSIONS");
+    t.excursions.forEach(x=>lines.push(
+      [x.name,x.date,x.time,x.location,money(x.cost),x.link,x.notes]
+        .filter(Boolean).join(" | ")
+    ));
+    lines.push("");
+  }
+  if(t.reminders.length){
+    lines.push("REMINDERS");
+    t.reminders.forEach(x=>lines.push(
+      (x.done?"[x] ":"[ ] ")+x.name+" "+x.date+" "+x.time
+    ));
+    lines.push("");
+  }
+  if(t.bookings.length){
+    lines.push("RESERVATIONS");
+    t.bookings.forEach(x=>lines.push(
+      [x.name,x.provider,x.confirmation,x.date,x.notes]
+        .filter(Boolean).join(" | ")
+    ));
+  }
+  return lines.join("\n");
+}
+
+function downloadBlob(blob,filename){
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;
+  a.download=filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
+function fileName(ext){
+  const t=currentTrip();
+  const safe=(t?.name||"Travel-Helper").replace(/[^a-z0-9_-]+/gi,"-");
+  return safe+"."+ext;
+}
+
+async function shareNative(){
+  closeShare();
+  const text=planText();
+  if(navigator.share){
+    try{
+      await navigator.share({title:"Travel Helper",text});
+      return;
+    }catch(e){
+      if(e.name==="AbortError")return;
+    }
+  }
+  try{
+    await navigator.clipboard.writeText(text);
+    alert("Trip details copied to clipboard.");
+  }catch(e){
+    alert("Sharing is unavailable here. Try Email or Save to Files.");
+  }
+}
+
+function downloadPlan(){
+  const blob=new Blob([planText()],{type:"text/plain;charset=utf-8"});
+  downloadBlob(blob,fileName("txt"));
+  closeShare();
+}
+
+function emailPlan(){
+  const subject=encodeURIComponent("Travel Helper: "+(currentTrip()?.name||"My Trip"));
+  const body=encodeURIComponent(planText());
+  window.location.href="mailto:?subject="+subject+"&body="+body;
+  closeShare();
+}
+
+function textPlan(){
+  const body=encodeURIComponent(planText());
+  window.location.href="sms:&body="+body;
+  closeShare();
+}
+
+function printPlan(){
+  closeShare();
+  window.print();
+}
+
+function shareFacebook(){
+  const url=encodeURIComponent(window.location.href);
+  window.open("https://www.facebook.com/sharer/sharer.php?u="+url,
+    "_blank","noopener,noreferrer");
+  closeShare();
+}
+
+async function shareInstagram(){
+  closeShare();
+  alert("Instagram does not allow websites to directly publish a text trip plan. Use the phone's Share option or save a summary image and share it through Instagram.");
+  await shareNative();
+}
+
+function saveImage(){
+  const t=currentTrip();
+  if(!t)return;
+  const canvas=document.createElement("canvas");
+  canvas.width=1080;
+  canvas.height=1350;
+  const ctx=canvas.getContext("2d");
+  const gradient=ctx.createLinearGradient(0,0,1080,1350);
+  gradient.addColorStop(0,"#10243b");
+  gradient.addColorStop(1,"#087caa");
+  ctx.fillStyle=gradient;
+  ctx.fillRect(0,0,1080,1350);
+  ctx.fillStyle="#ffffff";
+  ctx.font="bold 70px Arial";
+  ctx.fillText("✈ Travel Helper",70,130);
+  ctx.font="bold 55px Arial";
+  ctx.fillText(t.name.slice(0,26),70,265);
+  ctx.font="38px Arial";
+  const lines=[
+    "Destination: "+(t.destination||"Not set"),
+    "Trip Type: "+(t.type||"Not set"),
+    "Departure: "+(t.departure||"Not set"),
+    "Return: "+(t.returnDate||"Not set"),
+    "Budget: "+money(t.budget),
+    "Checklist: "+t.checklist.filter(x=>x.done).length+
+      "/"+t.checklist.length+" packed",
+    "Itinerary Activities: "+t.itinerary.length,
+    "Excursions: "+t.excursions.length,
+    "Reminders: "+t.reminders.length
+  ];
+  let y=375;
+  for(const line of lines){
+    const short=line.length>42?line.slice(0,39)+"...":line;
+    ctx.fillText(short,70,y);
+    y+=94;
+  }
+  ctx.font="30px Arial";
+  ctx.fillText("Plan • Pack • Budget • Explore",70,1260);
+  canvas.toBlob(blob=>{
+    if(blob)downloadBlob(blob,fileName("png"));
+    else alert("Could not create image.");
+  },"image/png");
+  closeShare();
+}
+
+init();
+</script>
+</body>
+</html>
