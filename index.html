@@ -144,3 +144,54 @@ function deleteBooking(id){const t=current();if(!t)return;const b=t.bookings.fin
 function renderBookings(){const t=current();$('bookingList').innerHTML=!t?'<p class="small">Select a trip to save bookings.</p>':(t.bookings||[]).map(b=>`<div class="entry"><strong>${esc(b.name)}</strong><p class="small">${esc(b.type)} • ${esc(b.provider||'Provider not set')} • ${esc(b.date||'Date not set')} ${esc(b.time||'')} • ${money(b.cost)}</p>${b.confirmation?`<p>Confirmation: ${esc(b.confirmation)}</p>`:''}${b.notes?`<p>${esc(b.notes)}</p>`:''}<button class="danger" onclick="deleteBooking('${esc(b.id)}')">Delete Booking</button></div>`).join('')||'<p class="small">No bookings saved yet.</p>'}
 init();
 </script></body></html>
+
+/* Fix Travel Helper layout alignment */
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    overflow-x: hidden;
+}
+
+input,
+select,
+textarea {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    margin: 8px 0 16px;
+    padding: 12px;
+    border-radius: 8px;
+}
+
+form,
+.form-group {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+
+@media (max-width: 600px) {
+    .container,
+    .card,
+    .content {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
+    input,
+    select,
+    textarea {
+        font-size: 16px;
+    }
+}
