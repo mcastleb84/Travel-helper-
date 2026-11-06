@@ -274,6 +274,7 @@ button:active{opacity:.75}
       <div class="timer-unit"><strong id="homeSeconds">—</strong><span>Seconds</span></div>
     </div>
     <p id="countdownMessage">Create a trip to begin.</p>
+    <p id="countdownTripDate" aria-live="polite" style="font-weight:700;margin:8px 0 0">📅 Trip date: Not set</p>
   </div>
 
   <div class="card">
@@ -713,6 +714,9 @@ function setClock(prefix,d,h,m,s){
 function updateCountdown(){
   const t=currentTrip();
   const date=departureDate(t);
+  $("countdownTripDate").textContent=date
+    ? "📅 Trip date: "+date.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"})
+    : "📅 Trip date: Not set";
   if(!date){
     setClock("home","—","—","—","—");
     setClock("track","—","—","—","—");
